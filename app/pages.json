@@ -1,0 +1,186 @@
+{
+  "easycom": {
+    "^u-(.*)": "uview-ui/components/u-$1/u-$1.vue"
+  },
+  "pages": [
+    {
+      "path": "pages/login/login",
+      "meta": {
+        "loginAuth": false
+      },
+      "style": {
+        "navigationBarTitleText": "登陸"
+      }
+    },
+    {
+      "path": "pages/index",
+      "meta": {
+        "loginAuth": true
+      },
+      "style": {
+        "navigationBarTitleText": "冰點智物流"
+      }
+    },
+    {
+      "path": "pages/work/index",
+      "meta": {
+        "loginAuth": true
+      },
+      "style": {
+        "navigationBarTitleText": "工作台"
+      }
+    },
+    {
+      "path": "pages/mine/index",
+      "meta": {
+        "loginAuth": true
+      },
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    },
+    {
+      "path": "pages/mine/avatar/index",
+      "meta": {
+        "loginAuth": true
+      },
+      "style": {
+        "navigationBarTitleText": "修改大頭貼"
+      }
+    },
+    {
+      "path": "pages/mine/info/index",
+      "meta": {
+        "loginAuth": true
+      },
+      "style": {
+        "navigationBarTitleText": "個人信息"
+      }
+    },
+    {
+      "path": "pages/mine/info/edit",
+      "meta": {
+        "loginAuth": true
+      },
+      "style": {
+        "navigationBarTitleText": "編輯資料"
+      }
+    },
+    {
+      "path": "pages/mine/pwd/index",
+      "meta": {
+        "loginAuth": true
+      },
+      "style": {
+        "navigationBarTitleText": "修改密碼"
+      }
+    },
+    {
+      "path": "pages/mine/setting/index",
+      "meta": {
+        "loginAuth": true
+      },
+      "style": {
+        "navigationBarTitleText": "應用設置"
+      }
+    },
+    {
+      "path": "pages/mine/help/issue/index",
+      "meta": {
+        "loginAuth": true
+      },
+      "style": {
+        "navigationBarTitleText": "常見問題"
+      }
+    },
+    {
+      "path": "pages/mine/help/issue/info",
+      "meta": {
+        "loginAuth": true
+      },
+      "style": {
+        "navigationBarTitleText": "常見問題詳情"
+      }
+    },
+    {
+      "path": "pages/mine/about/index",
+      "meta": {
+        "loginAuth": true
+      },
+      "style": {
+        "navigationBarTitleText": "關於我們"
+      }
+    },
+    {
+      "path": "pages/common/webview/index",
+      "meta": {
+        "loginAuth": false
+      },
+      "style": {
+        "navigationBarTitleText": "瀏覽網頁"
+      }
+    },
+    {
+      "path": "pages/common/textview/index",
+      "meta": {
+        "loginAuth": false
+      },
+      "style": {
+        "navigationBarTitleText": "瀏覽文本"
+      }
+    },
+    {
+      "path": "pages/WMS/material-issue/index",
+      "meta": {
+        "loginAuth": true
+      },
+      "style": {
+        "navigationBarTitleText": "領料作業"
+      }
+    },
+    {
+      "path": "pages/mes/production/index",
+      "meta": {
+        "loginAuth": true
+      },
+      "style": {
+        "navigationBarTitleText": "來一台"
+      }
+    }
+  ],
+  "tabBar": {
+    "color": "#000000",
+    "selectedColor": "#000000",
+    "borderStyle": "white",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index",
+        "iconPath": "static/images/tabbar/home.png",
+        "selectedIconPath": "static/images/tabbar/home_.png",
+        "text": "首頁"
+      },
+      {
+        "pagePath": "pages/work/index",
+        "iconPath": "static/images/tabbar/work.png",
+        "selectedIconPath": "static/images/tabbar/work_.png",
+        "text": "工作台"
+      },
+      {
+        "pagePath": "pages/mine/index",
+        "iconPath": "static/images/tabbar/mine.png",
+        "selectedIconPath": "static/images/tabbar/mine_.png",
+        "text": "我的"
+      }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "bMES",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8",
+    "app-plus": {
+      "titleNView": true
+    }
+  }
+}

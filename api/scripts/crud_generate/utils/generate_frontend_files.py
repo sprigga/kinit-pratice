@@ -19,11 +19,19 @@ class FrontendFileGenerator:
         根据模型名称生成对应的目录结构和文件。
         """
         # 拆分模型名称，例如 'LotteryMembers' -> ['Lottery', 'Members']
+        class_model_name = self.model.__name__  # 获取模型类的名称
         model_name_parts = re.findall(r'[A-Z][a-z]*', self.model.__name__)
         folder_name = model_name_parts[0].lower()  # 'lottery'
         model_name = model_name_parts[1].lower()  # 'members'
-        fun_name = model_name_parts[2].lower()  # 'members'
-
+        
+        # 修正這一行，處理不同長度的模型名稱
+        if len(model_name_parts) >= 3:
+            fun_name = model_name_parts[2].lower()  # 如果有第三部分，使用第三部分
+        elif len(model_name_parts) == 2:
+            fun_name = model_name_parts[1].lower()  # 如果只有兩部分，使用第二部分
+        else:
+            fun_name = model_name_parts[0].lower()  # 如果只有一部分，使用第一部分
+        
 
         # 获取上一级目录，即主项目的目录
         main_project_dir = Path(BASE_DIR).parent  # 上一级目录，主项目目录
@@ -43,7 +51,6 @@ class FrontendFileGenerator:
         list_file_name = f"{fun_name.capitalize()}.vue"  # 'Members.vue' 文件名
         list_api_dir = base_web_dir / "src" / "views" / folder_name.capitalize() / model_name.capitalize()  / fun_name.capitalize()# 路径
         list_api_file_path = list_api_dir / list_file_name  # 'Members.vue' 文件路径
-
         # 确保目录存在
         list_api_dir.mkdir(parents=True, exist_ok=True)
 
@@ -52,7 +59,7 @@ class FrontendFileGenerator:
 
         # 生成编辑页面 (Write.vue)
         write_file_name = "Write.vue"
-        write_api_file_path = base_web_dir / "src" / "views" / folder_name / model_name / fun_name / "components" / write_file_name  # 路径
+        write_api_file_path = base_web_dir / "src" / "views" / folder_name.capitalize() / model_name.capitalize() / fun_name.capitalize() / "components" / write_file_name  # 路径
 
         # 确保目录存在
         write_api_file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -86,7 +93,7 @@ export const put{self.base_class_name}Api = (data: any): Promise<IResponse> => {
 
 /** 获取单个 {self.zh_name} 详情 */
 export const get{self.base_class_name}Api = (dataId: number): Promise<IResponse> => {{
-  return request.get({{ url: `{folder_name}/{model_name}/${{dataId}}` }})
+  return request.get({{ url: `/{folder_name}/{model_name}/${{dataId}}` }})
 }}
 """
         api_file_path.write_text(content.strip() + "\n", encoding="utf-8")

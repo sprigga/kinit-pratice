@@ -128,13 +128,13 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       proxy: {
         // 選項寫法
         '/api': {
-          target: 'http://127.0.0.1:8080',
+          target: 'http://127.0.0.1:9000',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, '')
         },
         // 選項寫法
         '/media': {
-          target: 'http://127.0.0.1:8080',
+          target: 'http://127.0.0.1:9000',
           changeOrigin: true,
           rewrite: (path) => path
         }

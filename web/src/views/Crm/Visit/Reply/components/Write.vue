@@ -68,9 +68,7 @@ const formSchema = reactive<FormSchema[]>([
   }
 ])
 
-const rules = reactive({
-
-})
+const rules = reactive({})
 
 const { formRegister, formMethods } = useForm()
 const { setValues, getFormData, getElFormExpose } = formMethods

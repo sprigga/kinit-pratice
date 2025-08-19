@@ -1,3 +1,5 @@
+from apps.bpm.it.views import app as bpmin_it_detail_app
+from apps.bpm.it.views import app as bpmin_it_app
 from apps.vadmin.analysis.views import app as vadmin_analysis_app
 from apps.vadmin.auth.utils.login import app as auth_app
 from apps.vadmin.auth.views import app as vadmin_auth_app
@@ -10,6 +12,9 @@ from apps.vadmin.workplace.views import app as vadmin_workplace_app
 
 # 引入应用中的路由
 urlpatterns = [
+    {"ApiRouter": bpmin_it_detail_app, "prefix": "/bpmin/it", "tags": ["資訊需求單歷程"]},
+    {"ApiRouter": bpmin_it_app, "prefix": "/bpmin/it", "tags": ["資訊需求單"]},
+    # {"ApiRouter": vadmin_test_app, "prefix": "/vadmin/test", "tags": ["測試功能"]},
     {"ApiRouter": auth_app, "prefix": "/auth", "tags": ["系统認證"]},
     {"ApiRouter": vadmin_auth_app, "prefix": "/vadmin/auth", "tags": ["權限管理"]},
     {"ApiRouter": vadmin_system_app, "prefix": "/vadmin/system", "tags": ["系统管理"]},

@@ -27,7 +27,8 @@ DEMO_WHITE_LIST_PATH = [
     "/vadmin/system/dict/types/details",
     "/vadmin/system/settings/tabs",
     "/vadmin/resource/images",
-    "/vadmin/auth/user/export/query/list/to/excel"
+    "/vadmin/auth/user/export/query/list/to/excel",
+    "/vadmin/test/test"
 ]
 """演示功能黑名單（觸發異常 status_code=403），黑名单優先級更高"""
 DEMO_BLACK_LIST_PATH = [
@@ -137,7 +138,11 @@ IGNORE_OPERATION_FUNCTION = ["post_dicts_details"]
 """
 中間件配置
 """
+# Polo add 2024-12-09: 是否開啟詳細請求調試日誌（開發環境建議開啟）
+DEBUG_REQUEST_LOG = DEBUG  # 跟隨DEBUG設定，生產環境會自動關閉
+
 MIDDLEWARES = [
+    "core.middleware.register_debug_request_middleware" if DEBUG_REQUEST_LOG else None,  # Polo add 2024-12-09
     "core.middleware.register_request_log_middleware" if REQUEST_LOG_RECORD else None,
     "core.middleware.register_operation_record_middleware" if OPERATION_LOG_RECORD and MONGO_DB_ENABLE else None,
     "core.middleware.register_demo_env_middleware" if DEMO else None,

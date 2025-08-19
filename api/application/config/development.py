@@ -26,7 +26,8 @@ Mysql 數據庫配置項
 """
 USE_GCP_DB = False  # 如果是 True，使用 GCP DB；如果是 False，使用本機 DB
 MYSQL_USER = urllib.parse.quote_plus('oa-admin')
-MYSQL_SERVER_IP = urllib.parse.quote_plus('127.0.0.1')
+MYSQL_SERVER_IP = urllib.parse.quote_plus('192.168.30.20')
+# MYSQL_SERVER_IP = urllib.parse.quote_plus('145.10.0.7')
 MYSQL_PORT = '3306'
 MYSQL_PASSWORD = 'Bdfrost168'
 MYSQL_DB = urllib.parse.quote_plus(PROJECT_NAME)
@@ -50,7 +51,8 @@ Redis 數據庫配置
 格式："redis://:密碼@地址:端口/數據庫名稱"
 """
 REDIS_DB_ENABLE = True
-REDIS_DB_URL = "redis://:@127.0.0.1:6379/1"
+REDIS_DB_URL = "redis://:123456@192.168.30.20:6379/1"
+# REDIS_DB_URL = "redis://:123456@192.168.30.20:6379/1"
 
 """
 MongoDB 數據庫配置
@@ -58,13 +60,19 @@ MongoDB 數據庫配置
 """
 MONGO_DB_ENABLE = True
 MONGO_DB_NAME = "bd-oa"
+# MONGO_DB_NAME = "oa"
 MONGO_DB_USERNAME = "oa-admin"
 MONGO_DB_PASSWORD = "Bdfrost168"
+# MONGO_DB_USERNAME = "afu"
+# MONGO_DB_PASSWORD = "Y05os@5352"
 # 這是雲端服務用的
 # MONGO_DB_URL = f"mongodb+srv://{MONGO_DB_USERNAME}:{MONGO_DB_PASSWORD}@{MONGO_DB_NAME}.i1bhh.mongodb.net/?retryWrites=true&w=majority&tls=true&tlsAllowInvalidCertificates=true"
 # MONGO_DB_URL = f"mongodb://{MONGO_DB_USERNAME}:{MONGO_DB_PASSWORD}@127.0.0.1:27017/?authSource={MONGO_DB_NAME}"
-MONGO_DB_URL = f"mongodb://oa-admin:Bdfrost168@127.0.0.1:27017/?authSource=bd-oa"
+# MONGO_DB_URL = f"mongodb://oa-admin:Bdfrost168@127.0.0.1:27017/?authSource=oa"
+MONGO_DB_URL = f"mongodb://{MONGO_DB_USERNAME}:{MONGO_DB_PASSWORD}@192.168.30.20:27017/?authSource={MONGO_DB_NAME}"
+# MONGO_DB_URL = f"mongodb://{MONGO_DB_USERNAME}:{MONGO_DB_PASSWORD}@145.10.0.6:27017/?authSource={MONGO_DB_NAME}"
 
+# 145.10.0.6
 """
 EMQX MQTT配置
 格式：mongodb://用户名:密碼@地址:端口/?authSource=數據庫名稱

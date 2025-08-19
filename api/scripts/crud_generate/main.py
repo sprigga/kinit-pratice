@@ -248,33 +248,75 @@ class CrudGenerate(GenerateBase):
 
 def find_model_class(model_name: str):
     """
-    自動遍歷 apps 目錄下的所有 .py 文件，查找符合名稱的模型類
+    自動遍歷 apps 目錄下的所有 .py 文件，查找符合名稱的 SQLAlchemy 模型類
     :param model_name: 模型類名，例如 'LotteryMembers'
-    :return: 返回模型類本身
+    :return: 返回 SQLAlchemy 模型類本身
     """
+    found_classes = []
+    
     for root, _, files in os.walk(os.path.join(BASE_DIR, "apps")):
         for file in files:
             if file.endswith(".py") and not file.startswith("__init__"):
                 # 計算相對路徑，轉換成模組導入路徑
-                # module_path = (
-                #     os.path.relpath(os.path.join(root, file), BASE_DIR)
-                #     .replace(os.path.sep, ".")
-                #     .rstrip(".py")
-                # )
                 module_path = os.path.relpath(os.path.join(root, file), BASE_DIR).replace(os.path.sep, ".")
                 if module_path.endswith(".py"):
                     module_path = module_path[:-3]  # 只刪除 `.py`
                 try:
                     # 動態導入模組
                     module = importlib.import_module(module_path)
-                    print(f"模組: {module}, 類名: {model_name}")
                     # 檢查模組內是否有指定的類
                     if hasattr(module, model_name):
-                        print(f"找到模型類 '{model_name}' 於模組: {module_path}")
-                        return getattr(module, model_name)
+                        model_class = getattr(module, model_name)
+                        
+                        # 檢查是否為 SQLAlchemy 模型類
+                        if _is_sqlalchemy_model(model_class):
+                            print(f"找到 SQLAlchemy 模型類 '{model_name}' 於模組: {module_path}")
+                            found_classes.append((model_class, module_path))
+                        else:
+                            print(f"跳過非 SQLAlchemy 模型類 '{model_name}' 於模組: {module_path} (類型: {type(model_class)})")
+                            
                 except Exception as e:
-                    print(f"模組導入失敗: {module_path}, 錯誤: {e}")
-    raise ImportError(f"未找到模型類 '{model_name}'，請確認類名是否正確。")
+                    # 靜默處理導入錯誤，避免過多輸出
+                    pass
+    
+    if not found_classes:
+        raise ImportError(f"未找到 SQLAlchemy 模型類 '{model_name}'，請確認類名是否正確且該類繼承自 Base。")
+    
+    if len(found_classes) > 1:
+        print(f"警告: 找到多個同名的 SQLAlchemy 模型類:")
+        for cls, path in found_classes:
+            print(f"  - {path}")
+        print(f"使用第一個找到的: {found_classes[0][1]}")
+    
+    return found_classes[0][0]
+
+
+def _is_sqlalchemy_model(cls):
+    """
+    檢查類是否為 SQLAlchemy 模型類
+    :param cls: 要檢查的類
+    :return: 如果是 SQLAlchemy 模型類則返回 True
+    """
+    try:
+        # 檢查是否為類
+        if not inspect.isclass(cls):
+            return False
+            
+        # 檢查是否繼承自 Base
+        if not issubclass(cls, Base):
+            return False
+            
+        # 檢查是否有 __tablename__ 屬性
+        if not hasattr(cls, '__tablename__'):
+            return False
+            
+        # 排除 Base 類本身
+        if cls is Base:
+            return False
+            
+        return True
+    except (TypeError, AttributeError):
+        return False
 
 if __name__ == '__main__':
     # 檢查命令行參數

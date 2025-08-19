@@ -16,9 +16,9 @@ declare global {
     -readonly [P in keyof T]: T[P]
   }
 
-  declare type ComponentRef<T> = InstanceType<T>
+  declare type ComponentRef<T = any> = InstanceType<T>
 
-  declare type LocaleType = 'zh-TW' | 'en'
+  declare type LocaleType = 'zh-TW' | 'zh-CN' | 'en'
 
   declare type TimeoutHandle = ReturnType<typeof setTimeout>
   declare type IntervalHandle = ReturnType<typeof setInterval>

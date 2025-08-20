@@ -7,7 +7,11 @@ import {
   putBpminItApi,
   getBpminItApi
 } from '@/api/bpmin/it/it'
-import { getBpminItDetailListApi, addBpminItDetailApi } from '@/api/bpmin/it/detail'
+import {
+  getBpminItDetailListApi,
+  addBpminItDetailApi,
+  delBpminItDetailApi
+} from '@/api/bpmin/it/detail'
 
 import { useTable } from '@/hooks/web/useTable'
 import { useI18n } from '@/hooks/web/useI18n'
@@ -16,7 +20,7 @@ import {
   ElRow,
   ElCol,
   ElMessage,
-  ElDatePicker,
+  ElMessageBox,
   ElInput,
   ElSelect,
   ElOption,
@@ -33,7 +37,6 @@ import { Dialog } from '@/components/Dialog'
 import { useDictStore } from '@/store/modules/dict'
 import { DictDetail } from '@/utils/dict'
 import { BaseButton } from '@/components/Button'
-import { ComponentRef } from '@/types/components'
 
 defineOptions({
   name: 'BpminIt'
@@ -218,7 +221,7 @@ const tableColumns = reactive<TableColumn[]>([
         else if (status === '處理中') statusType = 'primary'
         else if (status === '已暫停') statusType = 'warning'
         else if (status === '已取消') statusType = 'danger'
-        return <ElTag type={statusType}>{status}</ElTag>
+        return <ElTag type={statusType as any}>{status}</ElTag>
       }
     }
   },
@@ -330,7 +333,7 @@ const dialogTitle = ref('')
 const currentRow = ref()
 const actionType = ref('')
 
-const writeRef = ref<ComponentRef<typeof Write>>()
+const writeRef = ref<any>()
 
 const saveLoading = ref(false)
 
@@ -401,7 +404,7 @@ const getHistoryList = async () => {
 
     // 前端再次過濾確保數據正確性
     const filteredData =
-      res.data?.filter((record) => record.rsn === currentRow.value?.serial_number) || []
+      res.data?.filter((record: any) => record.rsn === currentRow.value?.serial_number) || []
 
     // console.log(`篩選前: ${res.data?.length || 0} 筆, 篩選後: ${filteredData.length} 筆`)
     // console.log('目標RSN:', currentRow.value.serial_number)
@@ -461,6 +464,41 @@ const submitHistoryRecord = async () => {
     }
   } else {
     ElMessage.error('新增歷程記錄失敗')
+  }
+}
+
+// 刪除歷程記錄
+const deleteHistoryRecord = async (row: any) => {
+  if (!row.id) {
+    ElMessage.error('無效的記錄ID')
+    return
+  }
+
+  try {
+    // 確認刪除
+    await ElMessageBox.confirm(
+      `確定要刪除這筆歷程記錄嗎？\n承辦人員: ${row.create_user}\n工作描述: ${row.work_desc}`,
+      '確認刪除',
+      {
+        confirmButtonText: '確定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+
+    // API 參數應該是 ids 數組，而不是包含 ids 屬性的對象
+    const res = await delBpminItDetailApi([row.id])
+    if (res && res.code === 200) {
+      ElMessage.success('刪除歷程記錄成功')
+      await getHistoryList() // 重新載入列表
+    } else {
+      ElMessage.error('刪除歷程記錄失敗')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('刪除歷程記錄失敗:', error)
+      ElMessage.error('刪除歷程記錄失敗')
+    }
   }
 }
 
@@ -611,6 +649,13 @@ const save = async () => {
             <ElTableColumn prop="rsn" label="參照序號" width="120" align="center" />
             <ElTableColumn prop="work_desc" label="工作描述" show-overflow-tooltip />
             <ElTableColumn prop="create_datetime" label="建立時間" width="160" align="center" />
+            <ElTableColumn label="操作" width="80" align="center">
+              <template #default="{ row }">
+                <BaseButton type="danger" size="small" link @click="deleteHistoryRecord(row)">
+                  刪除
+                </BaseButton>
+              </template>
+            </ElTableColumn>
           </ElTable>
           <div
             v-if="historyData.length === 0"

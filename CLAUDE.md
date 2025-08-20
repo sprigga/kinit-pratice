@@ -46,12 +46,6 @@ python main.py init --env dev
 # Initialize database (production)
 python main.py init
 
-# Run database migrations
-python main.py migrate --env dev
-
-# Start development server
-python main.py run
-
 # Create new app module
 python main.py init-app vadmin/new_module_name
 ```
@@ -310,7 +304,7 @@ const tableColumns = reactive<TableColumn[]>([
     field: 'field1',
     // ...
   },
-{  // 缺少正確縮排
+{
     field: 'field2',
     // ...
   }
@@ -318,14 +312,14 @@ const tableColumns = reactive<TableColumn[]>([
 ```
 
 **正確範例：**
-```javascript  
+```javascript
 const tableColumns = reactive<TableColumn[]>([
   {
     field: 'field1',
     // ...
   },
   {  // 正確的 2 空格縮排
-    field: 'field2', 
+    field: 'field2',
     // ...
   }
 ])
@@ -334,12 +328,12 @@ const tableColumns = reactive<TableColumn[]>([
 #### 3. 簡化複雜三元運算子
 將複雜的嵌套三元運算子改為 if-else 語句：
 
-**問題代碼：**
+**問題程式碼：**
 ```javascript
 const statusType = status === '已完成' ? 'success' : status === '處理中' ? 'primary' : status === '已暫停' ? 'warning' : status === '已取消' ? 'danger' : 'info'
 ```
 
-**修正代碼：**
+**修正程式碼：**
 ```javascript
 let statusType = 'info'
 if (status === '已完成') statusType = 'success'
@@ -393,3 +387,165 @@ sed -n '186p' /path/to/file.vue | hexdump -C
 
 **修正前**：物件缺少縮排或有多餘空格
 **修正後**：所有物件使用一致的 2 空格縮排
+
+## Vue.js 歷程記錄刪除功能問題及解決方式
+
+### 問題描述
+
+在實作 IT 服務需求單的歷程記錄刪除功能時，會遇到以下 console 錯誤：
+
+```
+It.vue:498 刪除歷程記錄失敗: TypeError: Cannot read properties of undefined (reading 'code')
+    at Proxy.deleteHistoryRecord (It.vue:490:13)
+```
+
+### 問題分析
+
+錯誤發生在 `deleteHistoryRecord` 函數中訪問 `res.code` 時，`res` 為 `undefined`，這表示 API 調用失敗或參數格式錯誤。
+
+### 根本原因
+
+**API 參數格式錯誤**：
+- **錯誤用法**: `delBpminItDetailApi({ ids: [row.id] })`  ❌
+- **正確用法**: `delBpminItDetailApi([row.id])`  ✅
+
+根據 `web/src/hooks/web/useTable.ts` 的定義和 `web/src/views/Bpmin/It/Detail/Detail.vue` 的使用範例，`delBpminItDetailApi` 函數接受的參數是 **ID 數組**，而不是包含 `ids` 屬性的物件。
+
+### 技術分析
+
+#### useTable Hook 的 fetchDelApi 定義
+```typescript
+// 來自 web/src/hooks/web/useTable.ts
+fetchDelApi?: (ids: string[] | number[] | number | string) => Promise<boolean>
+```
+
+#### Detail.vue 中的正確用法
+```typescript
+// 來自 web/src/views/Bpmin/It/Detail/Detail.vue
+fetchDelApi: async (value) => {
+  const res = await delBpminItDetailApi(value)  // value 是 ID 數組
+  return res.code === 200
+}
+```
+
+### 解決方案
+
+#### 修正前的錯誤程式碼
+```javascript
+const res = await delBpminItDetailApi({ ids: [row.id] })  // ❌ 錯誤格式
+if (res.code === 200) {  // TypeError: Cannot read properties of undefined
+  ElMessage.success('刪除歷程記錄成功')
+  await getHistoryList()
+} else {
+  ElMessage.error('刪除歷程記錄失敗')
+}
+```
+
+#### 修正後的正確程式碼
+```javascript
+const res = await delBpminItDetailApi([row.id])  // ✅ 正確格式：直接傳遞 ID 數組
+if (res && res.code === 200) {  // ✅ 先檢查 res 存在再檢查 code
+  ElMessage.success('刪除歷程記錄成功')
+  await getHistoryList()
+} else {
+  ElMessage.error('刪除歷程記錄失敗')
+}
+```
+
+### 完整的修正實作
+
+**文件位置**: `web/src/views/Bpmin/It/It/It.vue`
+
+```javascript
+// 刪除歷程記錄
+const deleteHistoryRecord = async (row: any) => {
+  if (!row.id) {
+    ElMessage.error('無效的記錄ID')
+    return
+  }
+
+  try {
+    // 確認刪除
+    await ElMessageBox.confirm(
+      `確定要刪除這筆歷程記錄嗎？\n承辦人員: ${row.create_user}\n工作描述: ${row.work_desc}`,
+      '確認刪除',
+      {
+        confirmButtonText: '確定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+
+    // API 參數應該是 ids 數組，而不是包含 ids 屬性的對象
+    const res = await delBpminItDetailApi([row.id])
+    if (res && res.code === 200) {
+      ElMessage.success('刪除歷程記錄成功')
+      await getHistoryList() // 重新載入列表
+    } else {
+      ElMessage.error('刪除歷程記錄失敗')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('刪除歷程記錄失敗:', error)
+      ElMessage.error('刪除歷程記錄失敗')
+    }
+  }
+}
+```
+
+### 相關修改
+
+#### 1. 導入必要的 API 和組件
+```javascript
+import {
+  getBpminItDetailListApi,
+  addBpminItDetailApi,
+  delBpminItDetailApi  // 新增刪除 API
+} from '@/api/bpmin/it/detail'
+
+import {
+  ElRow,
+  ElCol,
+  ElMessage,
+  ElMessageBox,  // 新增確認對話框
+  // ...其他組件
+} from 'element-plus'
+```
+
+#### 2. 在歷程記錄表格中新增操作欄
+```html
+<ElTableColumn label="操作" width="80" align="center">
+  <template #default="{ row }">
+    <BaseButton
+      type="danger"
+      size="small"
+      link
+      @click="deleteHistoryRecord(row)"
+    >
+      刪除
+    </BaseButton>
+  </template>
+</ElTableColumn>
+```
+
+### 最佳實踐
+
+1. **API 參數驗證**: 在調用 API 前先檢查參數格式是否正確
+2. **錯誤處理**: 在檢查回應屬性前先確認回應物件存在
+3. **用戶體驗**: 提供確認對話框避免誤刪，顯示清楚的成功/失敗訊息
+4. **資料同步**: 刪除成功後重新載入列表以保持資料一致性
+
+### 調試技巧
+
+當遇到類似的 API 調用問題時：
+
+1. **檢查 API 定義**: 查看 API 函數的型別定義和參數需求
+2. **參考既有用法**: 在專案中搜尋相同 API 的其他使用範例
+3. **使用 console.log**: 在 API 調用前後加入日誌檢查參數和回應
+4. **錯誤處理**: 加入適當的 try-catch 和 null 檢查
+
+```javascript
+console.log('API 參數:', [row.id])  //調試參數
+const res = await delBpminItDetailApi([row.id])
+console.log('API 回應:', res)  //調試回應
+```

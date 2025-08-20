@@ -1,175 +1,175 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+此檔案為 Claude Code (claude.ai/code) 在處理此專案程式碼時提供指導。
 
-## Project Overview
+## 專案概述
 
-This is a multi-service enterprise management template with separate modules for API, web frontend, mobile app, and scheduled tasks. The system uses FastAPI for the backend, Vue.js for the web frontend, uni-app for mobile development, and APScheduler for task management.
+這是一個多服務企業管理模板，包含 API、網頁前端、行動應用程式和排程任務等獨立模組。系統後端使用 FastAPI，網頁前端使用 Vue.js，行動端開發使用 uni-app，任務管理使用 APScheduler。
 
-## Architecture
+## 架構
 
-The project consists of four main components:
+專案包含四個主要組件：
 
-- **api/**: FastAPI backend service with modular architecture
-- **web/**: Vue.js + Element Plus admin dashboard
-- **app/**: uni-app mobile application
-- **task/**: APScheduler-based task scheduler service
+- **api/**: FastAPI 後端服務，採用模組化架構
+- **web/**: Vue.js + Element Plus 管理後台
+- **app/**: uni-app 行動應用程式
+- **task/**: 基於 APScheduler 的任務排程服務
 
-### Backend Architecture (API)
+### 後端架構 (API)
 
-- **FastAPI** framework with async/await patterns
-- **SQLAlchemy 2.0** ORM with async support
-- **Alembic** for database migrations
-- **Modular structure** under `apps/vadmin/` with separate modules for auth, system, records, etc.
-- **Core services** in `core/` for database, middleware, validation, etc.
-- **Utilities** in `utils/` for common functions
+- **FastAPI** 框架，支援 async/await 模式
+- **SQLAlchemy 2.0** ORM，支援非同步操作
+- **Alembic** 資料庫遷移工具
+- **模組化結構** 位於 `apps/vadmin/` 下，包含認證、系統、記錄等獨立模組
+- **核心服務** 位於 `core/` 目錄，包含資料庫、中介軟體、驗證等功能
+- **工具程式** 位於 `utils/` 目錄，提供通用功能
 
-### Database Support
+### 資料庫支援
 
-- **MySQL 8.0+**: Primary database
-- **MongoDB**: Document storage for logs and analytics
-- **Redis**: Caching and pub/sub messaging
+- **MySQL 8.0+**: 主要資料庫
+- **MongoDB**: 文件儲存，用於日誌和分析
+- **Redis**: 快取和發布/訂閱訊息
 
-## Development Commands
+## 開發指令
 
-### API Service (FastAPI)
+### API 服務 (FastAPI)
 
 ```bash
 cd api
 
-# Install dependencies
+# 安裝依賴套件
 pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/
 
-# Initialize database (development)
+# 初始化資料庫（開發環境）
 python main.py init --env dev
 
-# Initialize database (production)
+# 初始化資料庫（正式環境）
 python main.py init
 
-# Create new app module
+# 建立新的應用程式模組
 python main.py init-app vadmin/new_module_name
 ```
 
-### Web Frontend
+### 網頁前端
 
 ```bash
 cd web
 
-# Install dependencies
+# 安裝依賴套件
 pnpm install
 
-# Development server
+# 開發伺服器
 pnpm run dev
 
-# Type checking
+# 型別檢查
 pnpm run ts:check
 
-# Linting and formatting
+# 程式碼檢查和格式化
 pnpm run lint:eslint
 pnpm run lint:format
 pnpm run lint:style
 
-# Build for production
+# 正式環境建置
 pnpm run build:pro
 
-# Build for development
+# 開發環境建置
 pnpm run build:dev
 ```
 
-### Mobile App (uni-app)
+### 行動應用程式 (uni-app)
 
 ```bash
 cd app
 
-# Development typically done through uni-app IDE or CLI tools
-# No specific build commands defined in package.json
+# 開發通常透過 uni-app IDE 或 CLI 工具進行
+# package.json 中未定義特定的建置指令
 ```
 
-### Task Scheduler
+### 任務排程器
 
 ```bash
 cd task
 
-# Install dependencies
+# 安裝依賴套件
 pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/
 
-# Run scheduler
+# 執行排程器
 python main.py
 ```
 
-### Docker Deployment
+### Docker 部署
 
 ```bash
-# Start all services
+# 啟動所有服務
 docker-compose up -d
 
-# Initialize database in container
+# 在容器中初始化資料庫
 docker-compose exec kinit-api python3 main.py init
 
-# Restart all services
+# 重新啟動所有服務
 docker-compose restart
 ```
 
-## Key Configuration Files
+## 重要設定檔案
 
-### Database Configuration
+### 資料庫設定
 
-- `api/alembic.ini`: Database migration settings
-- `api/application/config/development.py`: Development database settings
-- `api/application/config/production.py`: Production database settings
+- `api/alembic.ini`: 資料庫遷移設定
+- `api/application/config/development.py`: 開發環境資料庫設定
+- `api/application/config/production.py`: 正式環境資料庫設定
 
-### Environment Settings
+### 環境設定
 
-- `api/application/settings.py`: Main application settings
-  - Set `DEBUG = True` for development
-  - Set `DEBUG = False` for production
+- `api/application/settings.py`: 主要應用程式設定
+  - 開發環境設定 `DEBUG = True`
+  - 正式環境設定 `DEBUG = False`
 
-## Code Generation
+## 程式碼產生
 
-The project includes CRUD code generation capabilities:
+專案包含 CRUD 程式碼產生功能：
 
 ```bash
 cd api
 python scripts/crud_generate/main.py
 ```
 
-This generates:
-- Schema serialization code
-- DAL (Data Access Layer) code  
-- Parameter validation code
-- View/API endpoint code
+此功能會產生：
+- 結構序列化程式碼
+- DAL（資料存取層）程式碼
+- 參數驗證程式碼
+- 視圖/API 端點程式碼
 
-## Development Guidelines
+## 開發指導原則
 
-### Database Operations
+### 資料庫操作
 
-- Always use async database operations with SQLAlchemy
-- Use Alembic for schema migrations
-- Test migrations in development environment first
+- 始終使用 SQLAlchemy 的非同步資料庫操作
+- 使用 Alembic 進行結構遷移
+- 在開發環境中先測試遷移
 
-### API Development
+### API 開發
 
-- Follow the modular structure under `apps/vadmin/`
-- Each module should have: models, schemas, crud, params, views
-- Use the provided base classes in `core/` for consistency
+- 遵循 `apps/vadmin/` 下的模組化結構
+- 每個模組應包含：models、schemas、crud、params、views
+- 使用 `core/` 中提供的基礎類別以保持一致性
 
-### Authentication
+### 身份驗證
 
-- JWT-based authentication with refresh tokens
-- OAuth2 password flow implementation
-- Role-based permissions system
+- 基於 JWT 的身份驗證，支援重新整理權杖
+- OAuth2 密碼流程實作
+- 基於角色的權限系統
 
-## Testing and Quality Assurance
+## 測試和品質保證
 
-- Run type checking: `pnpm run ts:check` (web)
-- Run linting: `pnpm run lint:eslint` (web)
-- Ensure database migrations work before deployment
-- Test Docker compose setup for production deployment
+- 執行型別檢查：`pnpm run ts:check`（網頁）
+- 執行程式碼檢查：`pnpm run lint:eslint`（網頁）
+- 確保資料庫遷移在部署前正常運作
+- 測試 Docker compose 設定以進行正式部署
 
-## Default Credentials
+## 預設帳號
 
-- Admin account: `15020221010` / `kinit2022`
-- Test account: `15020240125` / `test`
+- 管理員帳號：`15020221010` / `kinit2022`
+- 測試帳號：`15020240125` / `test`
 
 ## BPM WSDL 模組依賴問題及解決方式
 
@@ -549,3 +549,113 @@ console.log('API 參數:', [row.id])  //調試參數
 const res = await delBpminItDetailApi([row.id])
 console.log('API 回應:', res)  //調試回應
 ```
+
+## Docker 啟動 Web 前端及 Nginx 設置問題及解決方式
+
+### 問題描述
+在使用 Docker 啟動 admin 容器時，容器持續重啟，無法正常運行。
+
+### 問題診斷過程
+
+#### 1. 檢查容器狀態
+```bash
+docker ps -a
+```
+發現 car-admin 容器狀態為 `Restarting (1)`，表示容器啟動失敗並持續重啟。
+
+#### 2. 查看容器日誌
+```bash
+docker logs car-admin
+```
+
+#### 3. 錯誤信息分析
+日誌顯示以下錯誤：
+```
+2025/08/20 13:26:38 [emerg] 1#1: "proxy_pass" cannot have URI part in location given by regular expression, or inside named location, or inside "if" statement, or inside "limit_except" block in /etc/nginx/conf.d/default.conf:39
+nginx: [emerg] "proxy_pass" cannot have URI part in location given by regular expression, or inside named location, or inside "if" statement, or inside "limit_except" block in /etc/nginx/conf.d/default.conf:39
+```
+
+### 根本原因
+在 `web/default.conf` 文件中，第 38 行的 nginx 配置有語法錯誤：
+
+```nginx
+location ~ /openapi\.json$ {
+    proxy_pass http://145.10.0.2:8080/; # 問題：末尾有 URI 部分 "/"
+}
+```
+
+**錯誤原因：**
+- 使用了正則表達式 location（`~` 符號）
+- 但 `proxy_pass` 指令包含了 URI 部分（末尾的 `/`）
+- 在 nginx 中，當使用正則表達式 location 時，`proxy_pass` 不能包含 URI 部分
+
+### 解決方案
+
+#### 1. 修復 nginx 配置文件
+修改 `web/default.conf` 文件：
+
+```nginx
+# 修改前（錯誤）
+location ~ /openapi\.json$ {
+    proxy_pass http://145.10.0.2:8080/; # 末尾有 "/"
+}
+
+# 修改後（正確）
+location ~ /openapi\.json$ {
+    proxy_pass http://145.10.0.2:8080; # 移除末尾的 "/"
+}
+```
+
+#### 2. 重新構建並啟動容器
+```bash
+# 停止容器
+docker stop car-admin
+
+# 重新構建容器（因為配置文件是在構建時複製的）
+docker-compose build admin
+
+# 啟動容器
+docker-compose up -d admin
+```
+
+#### 3. 驗證修復結果
+```bash
+# 檢查容器狀態
+docker ps | grep car-admin
+
+# 查看最新日誌
+docker logs --tail 10 car-admin
+```
+
+### 成功結果
+修復後的容器狀態：
+```
+CONTAINER ID   IMAGE                  COMMAND                  CREATED          STATUS          PORTS                                           NAMES
+6c8d7f694ca6   kinit-template-admin   "/docker-entrypoint.…"   18 seconds ago   Up 17 seconds   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp         car-admin
+```
+
+日誌顯示 nginx 工作進程正常啟動：
+```
+2025/08/20 13:31:55 [notice] 1#1: start worker process 31
+2025/08/20 13:31:55 [notice] 1#1: start worker process 32
+...
+```
+
+### 重要注意事項
+
+1. **配置文件位置：** 
+   - 容器使用的是 `web/default.conf`，不是 `docker_env/kinit-admin/nginx/nginx.conf`
+   - 配置文件在 Docker 構建時複製到容器內，需要重新構建才能生效
+
+2. **nginx 正則表達式 location 規則：**
+   - 使用 `location ~` 時，`proxy_pass` 不能包含 URI 部分
+   - 正確：`proxy_pass http://backend;`
+   - 錯誤：`proxy_pass http://backend/;`
+
+3. **Docker 容器配置更新流程：**
+   - 修改配置文件 → 重新構建容器 → 重新啟動容器
+
+### 相關文件
+- `web/default.conf` - nginx 配置文件
+- `web/Dockerfile` - 容器構建文件
+- `docker-compose.yml` - 容器編排配置

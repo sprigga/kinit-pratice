@@ -11,7 +11,7 @@ COPY dist-pro/ /usr/share/nginx/html/kinit-admin/dist-pro
 COPY default.conf /etc/nginx/conf.d/default.conf
 
 # 暴露 80 端口
-EXPOSE 8080
+EXPOSE 80
 
 # 啟動 Nginx
 CMD ["nginx", "-g", "daemon off;"]

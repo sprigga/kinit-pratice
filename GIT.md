@@ -264,6 +264,73 @@ git remote set-url origin https://USERNAME:TOKEN@github.com/sprigga/kinit-pratic
 git push origin backup-20250819
 ```
 
+### 方案三：直接推送至主幹（使用 GitHub CLI 認證）
+
+```bash
+# 1. 檢查 GitHub CLI 認證狀態
+gh auth status
+
+# 2. 如果未登入，執行登入
+gh auth login
+
+# 3. 檢查當前狀態
+git status
+git branch -a
+
+# 4. 確保在正確的分支上並提交所有變更
+git add .
+git commit -m "feat: complete all changes"
+
+# 5. 切換到 main 分支（如果不在 main 上）
+git checkout main
+
+# 6. 拉取最新的 main 分支變更
+git pull origin main
+
+# 7. 合併功能分支到 main（如果需要）
+git merge feature-branch-name
+
+# 8. 設定遠端 URL 為 HTTPS
+git remote set-url origin https://github.com/sprigga/kinit-pratice.git
+
+# 9. 直接推送到 main 主幹
+git push origin main
+
+# 10. 驗證推送結果
+git status
+git log --oneline -5
+```
+
+#### 方案三的優勢
+- ✅ 使用 GitHub CLI 自動處理認證
+- ✅ 無需手動管理 Personal Access Token
+- ✅ 支援雙因素認證 (2FA)
+- ✅ 安全性更高，Token 自動管理
+- ✅ 一次性設定，長期使用
+
+#### GitHub CLI 認證設定
+```bash
+# 安裝 GitHub CLI（如果尚未安裝）
+# Ubuntu/Debian
+sudo apt install gh
+
+# macOS
+brew install gh
+
+# Windows
+winget install GitHub.cli
+
+# 登入 GitHub
+gh auth login
+# 選擇：GitHub.com
+# 選擇：HTTPS
+# 選擇：Login with a web browser
+# 按照提示完成認證
+
+# 驗證登入狀態
+gh auth status
+```
+
 ## 🎯 最佳實踐
 
 ### 1. .gitignore 設定原則

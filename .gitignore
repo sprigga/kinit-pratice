@@ -164,3 +164,13 @@ app/node_modules/
 api/secrets/bd-app-1426a-009370c6297d.json
 api/secrets/bd-app-1426a-009370c6297d.json
 api/secrets/*.json
+
+# Docker 資料庫文件
+docker_env/mysql/data/
+docker_env/mongo/data/
+docker_env/redis/data/
+docker_env/data/
+
+# 臨時文件
+*.tmp
+*.log

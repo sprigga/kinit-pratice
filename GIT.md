@@ -81,6 +81,61 @@ git add .
 git commit -m "Update .gitignore to exclude database files and add new project files"
 ```
 
+## 🔄 分支 Merge 到 Main 主幹流程
+
+### 完整 Merge 操作步驟
+
+```bash
+# 1. 檢查當前狀態和分支
+git status
+git branch -a
+git log --oneline -5
+
+# 2. 提交當前分支的所有變更
+git add .
+git commit -m "docs: add Git troubleshooting and merge guide"
+
+# 3. 切換到 main 分支
+git checkout main
+
+# 4. 拉取最新的 main 分支變更
+git pull origin main
+
+# 5. 合併功能分支到 main
+git merge backup-20250819
+
+# 6. 檢查合併結果
+git log --oneline -5
+
+# 7. 推送到遠端倉庫
+git push origin main
+```
+
+### Merge 類型說明
+
+#### Fast-forward Merge (快進合併)
+```bash
+# 當 main 分支沒有新提交時，Git 會執行快進合併
+git merge feature-branch
+# 輸出：Fast-forward
+```
+
+#### Three-way Merge (三方合併)
+```bash
+# 當 main 分支有新提交時，Git 會創建合併提交
+git merge feature-branch
+# 會打開編輯器讓你輸入合併提交訊息
+```
+
+#### 解決合併衝突
+```bash
+# 如果有衝突，Git 會暫停合併
+git status  # 查看衝突文件
+# 手動編輯衝突文件，解決衝突
+git add .   # 標記衝突已解決
+git commit  # 完成合併
+```
+
 ## 🚀 推送方法
 
 ### 方法一：使用 Personal Access Token (推薦)
@@ -150,6 +205,40 @@ git push origin backup-20250819
 
 ## 📝 完整操作流程
 
+### 方案一：分支開發後 Merge 到 Main（推薦）
+
+```bash
+# 1. 檢查當前狀態
+git status
+git remote -v
+git branch -a
+
+# 2. 在功能分支上完成開發
+git add .
+git commit -m "feat: complete feature development"
+
+# 3. 切換到 main 分支
+git checkout main
+
+# 4. 拉取最新變更
+git pull origin main
+
+# 5. 合併功能分支
+git merge backup-20250819
+
+# 6. 設定認證（選擇一種方法）
+git remote set-url origin https://USERNAME:TOKEN@github.com/sprigga/kinit-pratice.git
+
+# 7. 推送到 main
+git push origin main
+
+# 8. 清理本地分支（可選）
+git branch -d backup-20250819
+git push origin --delete backup-20250819
+```
+
+### 方案二：直接推送功能分支
+
 ```bash
 # 1. 檢查當前狀態
 git status
@@ -171,7 +260,7 @@ git commit -m "Clean up database files and update gitignore"
 # 5. 設定認證（選擇一種方法）
 git remote set-url origin https://USERNAME:TOKEN@github.com/sprigga/kinit-pratice.git
 
-# 6. 推送
+# 6. 推送功能分支
 git push origin backup-20250819
 ```
 

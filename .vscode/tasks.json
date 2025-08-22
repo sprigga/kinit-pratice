@@ -1,0 +1,73 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "gemini-flash",
+      "type": "shell",
+      "command": "gemini --model gemini-2.5-flash",
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "detail": "Run Gemini with 2.5 Flash model"
+    },
+    {
+      "label": "api-dev",
+      "type": "shell",
+      "command": "cd api && python main.py init --env dev",
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "detail": "Initialize API development environment"
+    },
+    {
+      "label": "web-dev",
+      "type": "shell",
+      "command": "cd web && pnpm run dev",
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "detail": "Start web development server"
+    },
+    {
+      "label": "docker-up",
+      "type": "shell",
+      "command": "docker-compose up -d",
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "detail": "Start all Docker services"
+    },
+    {
+      "label": "git-status",
+      "type": "shell",
+      "command": "git status",
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "detail": "Show git status"
+    }
+  ]
+}

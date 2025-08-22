@@ -1,4 +1,15 @@
 {
-    "editor.fontFamily": "'Google Sans Code', Consolas, 'Courier New', monospace",
-    "editor.fontSize": 16
+  "editor.fontFamily": "'Google Sans Code', Consolas, 'Courier New', monospace",
+  "editor.fontSize": 16,
+  "terminal.integrated.profiles.linux": {
+    "bash": {
+      "path": "bash",
+      "args": ["-c", "echo 'gemini-flash() { gemini --model gemini-2.5-flash \"$@\"; }' >> ~/.bashrc && source ~/.bashrc && bash"]
+    }
+  },
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.shellIntegration.enabled": true,
+  "terminal.integrated.commandsToSkipShell": [
+    "workbench.action.terminal.sendSequence"
+  ]
 }

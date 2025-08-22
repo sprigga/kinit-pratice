@@ -466,8 +466,12 @@ docker run --rm -v "$(pwd)":/backup alpine sh -c "cp -r /backup/data /backup/dat
 ### 4. 恢復備份數據
 ```bash
 # 使用Docker臨時容器進行恢復（推薦方法）
-cd /path/to/docker_env/mysql
-docker run --rm -v "$(pwd)":/backup alpine sh -c "rm -rf /backup/data && cp -r /backup/data_backup_YYYYMMDD_HHMMSS /backup/data"
+cd /path/to/project_root  # 注意：必須在專案根目錄執行
+docker run --rm -v "$(pwd)":/backup alpine sh -c "rm -rf /backup/docker_env/mysql/data && cp -r /backup/docker_env/mysql/data_backup_YYYYMMDD_HHMMSS /backup/docker_env/mysql/data"
+
+# 實際範例（在專案根目錄執行）
+cd /home/ubuntu/kinit-template
+docker run --rm -v "$(pwd)":/backup alpine sh -c "rm -rf /backup/docker_env/mysql/data && cp -r /backup/docker_env/mysql/data_backup_before_restore_20250822_104425 /backup/docker_env/mysql/data"
 ```
 
 ## 🔐 權限處理方法對比
@@ -477,8 +481,9 @@ docker run --rm -v "$(pwd)":/backup alpine sh -c "rm -rf /backup/data && cp -r /
 # 優點：無需sudo，自動化友好，安全可靠
 docker run --rm -v "$(pwd)":/backup alpine sh -c "COMMAND_HERE"
 
-# 實際範例
-docker run --rm -v "$(pwd)":/backup alpine sh -c "rm -rf /backup/data && cp -r /backup/data_backup_20250822_104425 /backup/data"
+# 實際範例（在專案根目錄執行，路徑必須正確）
+cd /home/ubuntu/kinit-template
+docker run --rm -v "$(pwd)":/backup alpine sh -c "rm -rf /backup/docker_env/mysql/data && cp -r /backup/docker_env/mysql/data_backup_20250822_104425 /backup/docker_env/mysql/data"
 ```
 
 ### 方法二：sudo權限（需要密碼）
@@ -533,16 +538,16 @@ docker-compose exec mysql mysql -u root -p'YOUR_PASSWORD' -e "USE oa; SELECT COU
 
 ### 實際恢復指令序列：
 ```bash
-# 1. 檢查狀態
-cd /home/ubuntu/kinit-template/docker_env/mysql
+# 1. 檢查狀態（先進入專案根目錄）
+cd /home/ubuntu/kinit-template
 docker-compose ps | grep mysql
-ls -la data_backup_before_restore_20250822_104425/
+ls -la docker_env/mysql/data_backup_before_restore_20250822_104425/
 
 # 2. 停止服務
 docker-compose stop mysql
 
 # 3. 恢復數據
-docker run --rm -v "$(pwd)":/backup alpine sh -c "rm -rf /backup/data && cp -r /backup/data_backup_before_restore_20250822_104425 /backup/data"
+docker run --rm -v "$(pwd)":/backup alpine sh -c "rm -rf /backup/docker_env/mysql/data && cp -r /backup/docker_env/mysql/data_backup_before_restore_20250822_104425 /backup/docker_env/mysql/data"
 
 # 4. 重啟服務
 docker-compose up -d mysql
@@ -586,14 +591,29 @@ drwxr-x--- 2 dnsmasq root    4096 Aug 22 11:10 #innodb_redo
 
 ### 常見問題及解決方案
 
-#### 1. 權限拒絕錯誤
+#### 1. 路徑錯誤問題
+```bash
+# 錯誤：cp: can't stat 'data_backup_before_restore_20250822_104425': No such file or directory
+# 原因：未在正確的目錄執行，或路徑不完整
+# 解決方法：
+
+# ❌ 錯誤：在 docker_env/mysql 目錄中執行
+cd /path/to/docker_env/mysql
+docker run --rm -v "$(pwd)":/backup alpine sh -c "cp -r data_backup_YYYYMMDD_HHMMSS /backup/data"
+
+# ✅ 正確：在專案根目錄執行，使用完整路徑
+cd /path/to/project_root
+docker run --rm -v "$(pwd)":/backup alpine sh -c "rm -rf /backup/docker_env/mysql/data && cp -r /backup/docker_env/mysql/data_backup_YYYYMMDD_HHMMSS /backup/docker_env/mysql/data"
+```
+
+#### 2. 權限拒絕錯誤
 ```bash
 # 錯誤：rm: cannot remove 'data/xxx': Permission denied
 # 解決：使用Docker臨時容器
-docker run --rm -v "$(pwd)":/backup alpine sh -c "rm -rf /backup/data"
+docker run --rm -v "$(pwd)":/backup alpine sh -c "rm -rf /backup/docker_env/mysql/data"
 ```
 
-#### 2. MySQL啟動失敗
+#### 3. MySQL啟動失敗
 ```bash
 # 錯誤：Container startup failed
 # 解決：完全重建容器
@@ -601,14 +621,14 @@ docker-compose down
 docker-compose up -d mysql
 ```
 
-#### 3. 掛載權限問題
+#### 4. 掛載權限問題
 ```bash
 # 錯誤：failed to create task for container
 # 解決：重新創建容器而不是僅僅restart
 docker-compose down && docker-compose up -d mysql
 ```
 
-#### 4. 數據庫連線失敗
+#### 5. 數據庫連線失敗
 ```bash
 # 檢查MySQL是否完全啟動
 docker-compose logs mysql
@@ -617,7 +637,7 @@ docker-compose logs mysql
 sleep 30
 ```
 
-#### 5. 備份目錄權限問題
+#### 6. 備份目錄權限問題
 ```bash
 # 如果無法創建備份目錄
 sudo mkdir -p /path/to/backup/directory
@@ -632,5 +652,6 @@ sudo chown $USER:$USER /path/to/backup/directory
 4. **恢復測試**：定期在測試環境中測試恢復流程
 5. **文檔記錄**：記錄每次備份和恢復的操作，包括時間和原因
 6. **權限管理**：使用Docker容器方法避免直接修改文件權限
+7. **路徑一致性**：始終在專案根目錄執行，確保路徑正確
 
 這套備份恢復流程已在實際環境中驗證有效，適用於Docker Compose管理的MySQL容器環境。

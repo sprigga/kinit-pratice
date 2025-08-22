@@ -171,6 +171,11 @@ docker_env/mongo/data/
 docker_env/redis/data/
 docker_env/data/
 
+# 在 Docker 資料庫文件區段添加                                                                                      
+docker_env/mysql/data_backup_*/                                                                                     
+docker_env/mysql/*.sql                                                                                              
+docker_env/mysql/*.dump 
+
 # 臨時文件
 *.tmp
 *.log

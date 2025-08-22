@@ -36,6 +36,21 @@ fatal: could not read Username for 'https://github.com': No such device or addre
 - 大量資料庫文件被標記為已修改
 - 無法正常提交和推送
 
+### 4. 推送被拒絕 (non-fast-forward)
+**問題描述：**
+```bash
+! [rejected]        main -> main (non-fast-forward)
+error: failed to push some refs to 'https://github.com/username/repo.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. If you want to integrate the remote changes,
+hint: use 'git pull' before pushing again.
+```
+
+**原因：**
+- 遠程倉庫有新的提交，本地分支落後於遠程分支
+- 本地有未提交的更改與遠程更新產生分歧
+- Git 無法執行快進合併 (fast-forward merge)
+
 ## 🔧 解決方案
 
 ### 步驟 1：更新 .gitignore 文件
@@ -79,6 +94,72 @@ git add .
 
 # 提交變更
 git commit -m "Update .gitignore to exclude database files and add new project files"
+```
+
+### 步驟 4：處理分支分歧問題
+
+當遇到推送被拒絕 (non-fast-forward) 錯誤時：
+
+#### 方法一：使用 Rebase (推薦，保持線性歷史)
+
+```bash
+# 1. 檢查當前狀態
+git status
+git log --oneline -5
+
+# 2. 獲取遠程更新
+git fetch origin
+
+# 3. 查看遠程分支狀態
+git log origin/main --oneline -3
+
+# 4. 提交本地更改
+git add .
+git commit -m "feat: add important local changes"
+
+# 5. 暫存其他未提交更改
+git stash push -m "Work in progress: temporary changes"
+
+# 6. 使用 rebase 同步遠程更新
+git pull --rebase origin main
+
+# 7. 解決合併衝突（如有）
+# 編輯衝突文件，然後：
+git add <conflicted_files>
+git rebase --continue
+
+# 8. 恢復暫存的更改（如需要）
+git stash pop
+
+# 9. 推送到遠程
+git push origin main
+```
+
+#### 方法二：使用 Merge (創建合併提交)
+
+```bash
+# 1. 檢查狀態並提交本地更改
+git status
+git add .
+git commit -m "feat: local changes before merge"
+
+# 2. 拉取並合併遠程更改
+git pull origin main
+
+# 3. 解決合併衝突（如有）
+# 編輯衝突文件，然後：
+git add <conflicted_files>
+git commit -m "merge: resolve conflicts with remote changes"
+
+# 4. 推送合併結果
+git push origin main
+```
+
+#### 方法三：強制推送 (謹慎使用)
+
+```bash
+# ⚠️ 警告：這會覆蓋遠程更改，僅在確定本地版本正確時使用
+git push origin main --force-with-lease
 ```
 
 ## 🔄 分支 Merge 到 Main 主幹流程
@@ -413,6 +494,113 @@ git push origin --all
 git push origin --tags
 ```
 
+## 🔄 分支分歧問題完整處理流程
+
+### 實際案例：推送被拒絕的完整解決過程
+
+```bash
+# 錯誤情況：
+# ! [rejected]        main -> main (non-fast-forward)
+# error: failed to push some refs to 'https://github.com/username/repo.git'
+
+# 完整解決步驟：
+
+# 1. 檢查當前狀態
+git status
+git log --oneline -5
+
+# 2. 提交重要的本地更改
+git add MYSQL.md  # 重要文檔更新
+git commit -m "docs: add complete MySQL container backup and restore guide"
+
+# 3. 暫存其他工作進度
+git stash push -m "Work in progress: various config and build changes"
+
+# 4. 獲取遠程更新並 rebase
+git pull --rebase origin main
+
+# 5. 解決合併衝突（如 .vscode/settings.json）
+# 編輯衝突文件，合併雙方有用的設定：
+# {
+#   "editor.fontFamily": "'Google Sans Code', Consolas, 'Courier New', monospace",
+#   "editor.fontSize": 16,
+#   "terminal.integrated.profiles.linux": {
+#     "bash": {
+#       "path": "bash",
+#       "args": ["-c", "echo 'alias...' >> ~/.bashrc && source ~/.bashrc && bash"]
+#     }
+#   },
+#   "terminal.integrated.defaultProfile.linux": "bash"
+# }
+
+git add .vscode/settings.json
+git rebase --continue
+
+# 6. 提交其他重要文件
+git add .vscode/ api/alembic/versions_dev/ web/dist-pro/
+git commit -m "update: Add VSCode settings, frontend build outputs, and database migration files"
+
+# 7. 清理複雜的 stash 衝突（如果需要）
+git stash drop  # 放棄有問題的 stash
+
+# 8. 成功推送
+git push origin main
+```
+
+### 分歧處理策略選擇
+
+| 策略 | 適用場景 | 優點 | 缺點 |
+|------|----------|------|------|
+| **Rebase** | 保持乾淨的線性歷史 | ✅ 歷史清晰<br>✅ 無合併提交 | ❌ 需要解決衝突<br>❌ 改寫歷史 |
+| **Merge** | 保留完整的分支歷史 | ✅ 保持原始歷史<br>✅ 處理簡單 | ❌ 產生合併提交<br>❌ 歷史複雜 |
+| **Force Push** | 確定本地版本正確 | ✅ 直接覆蓋 | ⚠️ 可能丟失遠程更改 |
+
+### 衝突解決最佳實踐
+
+#### 1. 配置文件衝突
+```bash
+# 示例：VSCode settings.json 衝突
+# <<<<<<< HEAD (遠程版本)
+# {
+#   "editor.fontFamily": "...",
+#   "editor.fontSize": 16
+# }
+# =======
+# {  
+#   "terminal.integrated.profiles.linux": {...}
+# }
+# >>>>>>> local (本地版本)
+
+# 解決：合併雙方有用的設定
+{
+  "editor.fontFamily": "'Google Sans Code', Consolas, 'Courier New', monospace",
+  "editor.fontSize": 16,
+  "terminal.integrated.profiles.linux": {
+    "bash": {
+      "path": "bash",
+      "args": ["-c", "echo 'gemini-flash() { gemini --model gemini-2.5-flash \"$@\"; }' >> ~/.bashrc && source ~/.bashrc && bash"]
+    }
+  },
+  "terminal.integrated.defaultProfile.linux": "bash"
+}
+```
+
+#### 2. 構建文件衝突
+```bash
+# 處理前端構建文件衝突
+# 通常選擇最新的構建結果
+git checkout --theirs web/dist-pro/
+git add web/dist-pro/
+```
+
+#### 3. 大量文件衝突處理
+```bash
+# 當有太多衝突時，重置並重新整理
+git reset --hard
+git stash drop
+git pull --rebase origin main
+```
+
 ## 🚨 緊急情況處理
 
 ### 撤銷最後一次提交
@@ -451,5 +639,20 @@ git reset --hard HEAD
 
 ---
 
-**最後更新：** 2025-08-20  
+**最後更新：** 2025-08-22  
 **維護者：** 專案開發團隊
+
+## 📋 版本更新記錄
+
+### 2025-08-22
+- ✅ 新增分支分歧問題處理章節
+- ✅ 新增推送被拒絕 (non-fast-forward) 問題的完整解決流程
+- ✅ 新增 Rebase vs Merge 策略比較表格
+- ✅ 新增衝突解決最佳實踐和實際案例
+- ✅ 新增配置文件、構建文件衝突的具體處理方法
+
+### 2025-08-20  
+- ✅ 初始版本：基本Git問題排除指南
+- ✅ 新增資料庫文件權限問題解決方案
+- ✅ 新增GitHub認證設定方法
+- ✅ 新增分支管理和推送方法

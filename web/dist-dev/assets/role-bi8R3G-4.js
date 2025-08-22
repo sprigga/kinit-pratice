@@ -1,0 +1,2 @@
+import{r as e}from"./index-BsUFl8WW.js";const s=t=>e.get({url:"/vadmin/auth/roles",params:t}),o=t=>e.post({url:"/vadmin/auth/roles",data:t}),u=t=>e.delete({url:"/vadmin/auth/roles",data:t}),i=t=>e.put({url:`/vadmin/auth/roles/${t.id}`,data:t}),l=t=>e.get({url:`/vadmin/auth/roles/${t}`}),n=()=>e.get({url:"/vadmin/auth/roles/options"});export{s as a,o as b,n as c,u as d,l as g,i as p};
+//# sourceMappingURL=role-bi8R3G-4.js.map

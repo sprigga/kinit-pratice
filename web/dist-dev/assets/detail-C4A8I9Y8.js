@@ -1,0 +1,2 @@
+import{r as i}from"./index-BsUFl8WW.js";const p=t=>i.get({url:"/bpmin/it/detail",params:t}),n=t=>i.post({url:"/bpmin/it/detail",data:t}),r=t=>i.delete({url:"/bpmin/it/detail",data:t}),l=t=>i.put({url:`/bpmin/it/detail/${t.id}`,data:t}),a=t=>i.get({url:`/bpmin/it/detail/${t}`});export{p as a,n as b,r as d,a as g,l as p};
+//# sourceMappingURL=detail-C4A8I9Y8.js.map

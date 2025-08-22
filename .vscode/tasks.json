@@ -1,0 +1,225 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Web: 打包正式環境",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["run", "build:pro"],
+      "options": {
+        "cwd": "${workspaceFolder}/web"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [],
+      "detail": "使用 pnpm 打包 Vue.js 前端應用程式（正式環境）"
+    },
+    {
+      "label": "Web: 打包開發環境",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["run", "build:dev"],
+      "options": {
+        "cwd": "${workspaceFolder}/web"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [],
+      "detail": "使用 pnpm 打包 Vue.js 前端應用程式（開發環境）"
+    },
+    {
+      "label": "Web: 啟動開發伺服器",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["run", "dev"],
+      "options": {
+        "cwd": "${workspaceFolder}/web"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "isBackground": true,
+      "problemMatcher": [
+        {
+          "pattern": [
+            {
+              "regexp": ".",
+              "file": 1,
+              "location": 2,
+              "message": 3
+            }
+          ],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".",
+            "endsPattern": "Local:.*http://localhost"
+          }
+        }
+      ],
+      "detail": "啟動 Vue.js 開發伺服器"
+    },
+    {
+      "label": "Web: 執行 ESLint 檢查",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["run", "lint:eslint"],
+      "options": {
+        "cwd": "${workspaceFolder}/web"
+      },
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": "$eslint-stylish",
+      "detail": "執行 ESLint 代碼檢查"
+    },
+    {
+      "label": "Web: 執行代碼格式化",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["run", "lint:format"],
+      "options": {
+        "cwd": "${workspaceFolder}/web"
+      },
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [],
+      "detail": "執行 Prettier 代碼格式化"
+    },
+    {
+      "label": "Web: TypeScript 類型檢查",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["run", "ts:check"],
+      "options": {
+        "cwd": "${workspaceFolder}/web"
+      },
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": "$tsc",
+      "detail": "執行 TypeScript 類型檢查"
+    },
+    {
+      "label": "API: 初始化開發資料庫",
+      "type": "shell",
+      "command": "python",
+      "args": ["main.py", "init", "--env", "dev"],
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [],
+      "detail": "初始化 FastAPI 開發環境資料庫"
+    },
+    {
+      "label": "API: 初始化正式資料庫",
+      "type": "shell",
+      "command": "python",
+      "args": ["main.py", "init"],
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [],
+      "detail": "初始化 FastAPI 正式環境資料庫"
+    },
+    {
+      "label": "Docker: 啟動所有服務",
+      "type": "shell",
+      "command": "docker-compose",
+      "args": ["up", "-d"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [],
+      "detail": "使用 Docker Compose 啟動所有服務"
+    },
+    {
+      "label": "Docker: 重新啟動所有服務",
+      "type": "shell",
+      "command": "docker-compose",
+      "args": ["restart"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [],
+      "detail": "使用 Docker Compose 重新啟動所有服務"
+    }
+  ]
+}

@@ -97,7 +97,7 @@ const tableColumns = reactive<TableColumn[]>([
   {
     field: 'serial_number',
     label: '表單序號',
-    width: '220px',
+    width: '230px',
     show: true,
     disabled: true,
     align: 'center',

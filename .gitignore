@@ -1,3 +1,34 @@
+# 🔐 安全性 - 排除敏感文件
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.csr
+secrets.txt
+secrets.json
+credentials.txt
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+config/secrets.yml
+config/credentials.yml
+
+# GitHub 相關敏感文件
+.github/workflows/secrets.yml
+.github/secrets/
+*.token
+*_token
+*_key
+
+# 資料庫備份文件（可能包含敏感數據）
+*.sql
+*.dump
+*.bak
+backup_*.tar.gz
+
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -229,7 +229,9 @@ git commit  # 完成合併
 
 2. **設定遠端 URL：**
 ```bash
-git remote set-url origin https://YOUR_USERNAME:YOUR_TOKEN@github.com/sprigga/kinit-pratice.git
+git remote set-url origin https://[USERNAME]:[TOKEN]@github.com/sprigga/kinit-pratice.git
+# 替換 [USERNAME] 為你的 GitHub 用戶名
+# 替換 [TOKEN] 為你的 Personal Access Token
 ```
 
 3. **推送分支：**
@@ -308,7 +310,7 @@ git pull origin main
 git merge backup-20250819
 
 # 6. 設定認證（選擇一種方法）
-git remote set-url origin https://USERNAME:TOKEN@github.com/sprigga/kinit-pratice.git
+git remote set-url origin https://[USERNAME]:[TOKEN]@github.com/sprigga/kinit-pratice.git
 
 # 7. 推送到 main
 git push origin main
@@ -339,7 +341,7 @@ git add .
 git commit -m "Clean up database files and update gitignore"
 
 # 5. 設定認證（選擇一種方法）
-git remote set-url origin https://USERNAME:TOKEN@github.com/sprigga/kinit-pratice.git
+git remote set-url origin https://[USERNAME]:[TOKEN]@github.com/sprigga/kinit-pratice.git
 
 # 6. 推送功能分支
 git push origin backup-20250819
@@ -600,6 +602,157 @@ git reset --hard
 git stash drop
 git pull --rebase origin main
 ```
+
+## 🔐 GitHub 密鑰安全性問題處理
+
+### GitGuardian 檢測到敏感信息
+
+當收到 GitGuardian 警告時，表示你的倉庫中可能包含敏感信息。
+
+#### 常見敏感信息類型
+- **Personal Access Token**: `ghp_xxxxxxxxxxxx`
+- **SSH私鑰**: `-----BEGIN OPENSSH PRIVATE KEY-----`
+- **API Keys**: 各種服務的API金鑰
+- **密碼**: 明文密碼或配置文件中的密碼
+- **資料庫連接字符串**: 包含用戶名密碼的連接字符串
+
+#### 立即處理步驟
+
+##### 1. 識別洩露來源
+```bash
+# 搜尋可能的敏感信息
+git log --oneline -10
+git show --name-only HEAD
+
+# 搜尋特定模式
+grep -r "ghp_\|ssh-rsa\|-----BEGIN" . --exclude-dir=.git
+grep -r "token\|key\|password\|secret" . --include="*.md" --include="*.txt"
+```
+
+##### 2. 立即撤銷受影響的憑證
+- **GitHub Token**: 前往 GitHub Settings > Developer settings > Personal access tokens，立即刪除洩露的token
+- **SSH Key**: 如果SSH私鑰洩露，立即生成新的密鑰對
+- **API Keys**: 到相關服務提供商處撤銷並重新生成
+
+##### 3. 從歷史記錄中清除敏感信息
+
+**方法一：修改最近的提交**
+```bash
+# 如果敏感信息在最新提交中
+git reset --soft HEAD~1
+# 編輯文件，移除敏感信息
+git add .
+git commit -m "fix: remove sensitive information"
+git push origin main --force-with-lease
+```
+
+**方法二：使用 BFG Repo-Cleaner（推薦）**
+```bash
+# 安裝 BFG Repo-Cleaner
+# Ubuntu: sudo apt install bfg
+# macOS: brew install bfg
+
+# 創建敏感信息清單文件
+echo "YOUR_SECRET_TOKEN" > secrets.txt
+echo "ghp_xxxxxxxxxxxx" >> secrets.txt
+
+# 清理歷史記錄
+bfg --replace-text secrets.txt .git
+git reflog expire --expire=now --all
+git gc --prune=now --aggressive
+
+# 強制推送清理後的歷史
+git push origin --force --all
+```
+
+**方法三：使用 git filter-branch**
+```bash
+# 從所有歷史記錄中移除特定文件
+git filter-branch --force --index-filter \
+  'git rm --cached --ignore-unmatch path/to/sensitive/file' \
+  --prune-empty --tag-name-filter cat -- --all
+
+# 清理並強制推送
+git reflog expire --expire=now --all
+git gc --prune=now --aggressive
+git push origin --force --all
+```
+
+##### 4. 更新 .gitignore 防止未來洩露
+```bash
+# 添加敏感文件模式到 .gitignore
+cat >> .gitignore << EOF
+
+# 安全性 - 排除敏感文件
+*.pem
+*.key
+*.p12
+*.pfx
+.env
+.env.local
+.env.production
+secrets.txt
+config/secrets.yml
+
+# GitHub 相關
+.github/workflows/secrets.yml
+```
+
+### 最佳實踐：防止敏感信息洩露
+
+#### 1. 使用環境變數
+```bash
+# 不要在代碼中硬編碼
+# ❌ 錯誤做法
+TOKEN = "ghp_xxxxxxxxxxxx"
+
+# ✅ 正確做法
+import os
+TOKEN = os.getenv('GITHUB_TOKEN')
+```
+
+#### 2. 配置 pre-commit hook
+```bash
+# 創建 .git/hooks/pre-commit
+#!/bin/bash
+if git diff --cached --name-only | xargs grep -l "ghp_\|ssh-rsa\|-----BEGIN"; then
+    echo "❌ 檢測到敏感信息，提交被阻止"
+    exit 1
+fi
+```
+
+#### 3. 使用 git-secrets 工具
+```bash
+# 安裝 git-secrets
+git clone https://github.com/awslabs/git-secrets.git
+cd git-secrets && make install
+
+# 在專案中啟用
+git secrets --install
+git secrets --register-aws
+git secrets --add 'ghp_[0-9A-Za-z]{36}'
+```
+
+#### 4. 定期審查
+```bash
+# 定期檢查敏感信息
+git log --grep="password\|token\|key" --oneline
+git log -S "secret" --oneline
+```
+
+### 緊急聯絡和報告
+
+#### 如果洩露了重要憑證：
+1. **立即撤銷所有相關憑證**
+2. **檢查是否有異常活動**
+3. **通知團隊成員**
+4. **更新文檔和流程**
+
+#### GitHub 進階安全功能
+- 啟用 **Dependabot alerts**
+- 啟用 **Secret scanning**
+- 啟用 **Code scanning**
+- 設定 **Branch protection rules**
 
 ## 🚨 緊急情況處理
 

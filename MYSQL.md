@@ -402,3 +402,235 @@ MONGO_IP=145.10.0.6
    - MySQL: 用戶 `oa-admin`，密碼 `Bdfrost168`，數據庫 `oa`
    - MongoDB: 用戶 `oa-admin`，密碼 `Bdfrost168`，認證數據庫 `car`，應用數據庫 `bd-oa`
 8. **環境變數**: 區分 Docker 環境變數（root 用戶）和應用配置（應用用戶）
+
+---
+
+# MySQL容器數據備份與恢復完整指令摘要
+
+## 📋 備份流程 (Backup Process)
+
+### 1. 檢查當前MySQL容器狀態
+```bash
+# 檢查容器運行狀態
+docker-compose ps | grep mysql
+
+# 檢查數據目錄結構
+ls -la /path/to/docker_env/mysql/data/
+```
+
+### 2. 停止MySQL服務
+```bash
+# 停止MySQL容器（保持其他服務運行）
+docker-compose stop mysql
+```
+
+### 3. 創建數據備份
+```bash
+# 進入MySQL目錄
+cd /path/to/docker_env/mysql
+
+# 使用Docker臨時容器備份（推薦方法）
+docker run --rm -v "$(pwd)":/backup alpine sh -c "cp -r /backup/data /backup/data_backup_$(date +%Y%m%d_%H%M%S)"
+
+# 或者如果有sudo權限
+sudo cp -r data "data_backup_$(date +%Y%m%d_%H%M%S)"
+```
+
+## 🔄 恢復流程 (Restore Process)
+
+### 1. 檢查備份目錄
+```bash
+# 確認備份數據完整性
+ls -la /path/to/docker_env/mysql/data_backup_YYYYMMDD_HHMMSS/
+
+# 檢查關鍵文件是否存在
+ls -la /path/to/docker_env/mysql/data_backup_YYYYMMDD_HHMMSS/ | grep -E "(ibdata1|mysql|oa)"
+```
+
+### 2. 停止MySQL服務
+```bash
+# 確保MySQL容器完全停止
+docker-compose stop mysql
+
+# 檢查容器狀態
+docker-compose ps mysql
+```
+
+### 3. 備份當前數據（可選但建議）
+```bash
+# 備份當前數據作為安全措施
+cd /path/to/docker_env/mysql
+docker run --rm -v "$(pwd)":/backup alpine sh -c "cp -r /backup/data /backup/data_backup_current_$(date +%Y%m%d_%H%M%S)"
+```
+
+### 4. 恢復備份數據
+```bash
+# 使用Docker臨時容器進行恢復（推薦方法）
+cd /path/to/docker_env/mysql
+docker run --rm -v "$(pwd)":/backup alpine sh -c "rm -rf /backup/data && cp -r /backup/data_backup_YYYYMMDD_HHMMSS /backup/data"
+```
+
+## 🔐 權限處理方法對比
+
+### 方法一：Docker臨時容器（推薦）
+```bash
+# 優點：無需sudo，自動化友好，安全可靠
+docker run --rm -v "$(pwd)":/backup alpine sh -c "COMMAND_HERE"
+
+# 實際範例
+docker run --rm -v "$(pwd)":/backup alpine sh -c "rm -rf /backup/data && cp -r /backup/data_backup_20250822_104425 /backup/data"
+```
+
+### 方法二：sudo權限（需要密碼）
+```bash
+# 需要互動式密碼輸入
+sudo rm -rf data
+sudo cp -r data_backup_YYYYMMDD_HHMMSS data
+```
+
+### 方法三：權限修改（不推薦）
+```bash
+# 可能影響MySQL服務正常運行
+sudo chown -R $USER:$USER data/
+# 操作完成後需要恢復權限
+sudo chown -R mysql:mysql data/
+```
+
+## ✅ 服務重啟與驗證
+
+### 5. 重啟MySQL服務
+```bash
+# 方法一：重新啟動MySQL容器
+docker-compose start mysql
+
+# 方法二：如果遇到掛載問題，完全重建
+docker-compose down
+docker-compose up -d mysql
+
+# 檢查容器狀態
+docker-compose ps mysql
+```
+
+### 6. 驗證數據恢復
+```bash
+# 等待MySQL完全啟動（約10秒）
+sleep 10
+
+# 獲取MySQL密碼（從.env文件）
+grep MYSQL_PASS /path/to/project/.env
+
+# 測試數據庫連線
+docker-compose exec mysql mysql -u root -p'YOUR_PASSWORD' -e "SHOW DATABASES;"
+
+# 驗證特定數據庫的表格
+docker-compose exec mysql mysql -u root -p'YOUR_PASSWORD' -e "USE oa; SHOW TABLES;" 2>/dev/null
+
+# 檢查關鍵業務表的記錄數量
+docker-compose exec mysql mysql -u root -p'YOUR_PASSWORD' -e "USE oa; SELECT COUNT(*) FROM Bpmin_it;" 2>/dev/null
+```
+
+## 📝 完整執行範例
+
+### 實際恢復指令序列：
+```bash
+# 1. 檢查狀態
+cd /home/ubuntu/kinit-template/docker_env/mysql
+docker-compose ps | grep mysql
+ls -la data_backup_before_restore_20250822_104425/
+
+# 2. 停止服務
+docker-compose stop mysql
+
+# 3. 恢復數據
+docker run --rm -v "$(pwd)":/backup alpine sh -c "rm -rf /backup/data && cp -r /backup/data_backup_before_restore_20250822_104425 /backup/data"
+
+# 4. 重啟服務
+docker-compose up -d mysql
+
+# 5. 驗證恢復
+sleep 10
+docker-compose exec mysql mysql -u root -p'Y05os@5352' -e "SHOW DATABASES;"
+docker-compose exec mysql mysql -u root -p'Y05os@5352' -e "USE oa; SHOW TABLES;" 2>/dev/null
+```
+
+## 🔍 技術原理說明
+
+### Docker權限處理機制
+1. **容器內外權限映射**：Docker容器內的root用戶可以操作掛載的外部文件，繞過宿主機的權限限制
+2. **臨時容器模式**：使用`--rm`標記的臨時容器執行完操作後自動清理，不留下任何痕跡
+3. **Volume掛載特性**：容器可以完全控制掛載的volume內容，包括特殊權限的數據庫文件
+
+### MySQL文件權限特性
+```bash
+# MySQL數據文件的典型權限設置
+-rw-r----- 1 dnsmasq root  196608 Aug 22 11:49 #ib_16384_0.dblwr
+-rw-r----- 1 dnsmasq root 8585216 Aug 22 11:09 #ib_16384_1.dblwr
+drwxr-x--- 2 dnsmasq root    4096 Aug 22 11:10 #innodb_redo
+```
+
+**問題原因**：
+- 所有者是 `dnsmasq`（Docker MySQL容器內的MySQL用戶ID在宿主機上的映射）
+- 權限設置 `640` (`rw-r-----`)：只有所有者可以寫入，組用戶只能讀取
+- 普通用戶無法直接操作這些文件
+
+## ⚠️ 備份恢復注意事項
+
+1. **備份頻率**：建議在重要操作前都進行備份
+2. **權限問題**：優先使用Docker容器方法處理權限問題
+3. **服務依賴**：確保API服務等依賴MySQL的服務在恢復後正常重啟
+4. **密碼安全**：避免在腳本中硬編碼密碼，從環境變數或配置文件讀取
+5. **數據一致性**：必須先停止MySQL服務再進行數據目錄操作
+6. **完整性驗證**：恢復後務必驗證數據庫連線和關鍵表格結構
+
+## 🚨 備份恢復故障排除
+
+### 常見問題及解決方案
+
+#### 1. 權限拒絕錯誤
+```bash
+# 錯誤：rm: cannot remove 'data/xxx': Permission denied
+# 解決：使用Docker臨時容器
+docker run --rm -v "$(pwd)":/backup alpine sh -c "rm -rf /backup/data"
+```
+
+#### 2. MySQL啟動失敗
+```bash
+# 錯誤：Container startup failed
+# 解決：完全重建容器
+docker-compose down
+docker-compose up -d mysql
+```
+
+#### 3. 掛載權限問題
+```bash
+# 錯誤：failed to create task for container
+# 解決：重新創建容器而不是僅僅restart
+docker-compose down && docker-compose up -d mysql
+```
+
+#### 4. 數據庫連線失敗
+```bash
+# 檢查MySQL是否完全啟動
+docker-compose logs mysql
+
+# 等待更長時間再測試連線
+sleep 30
+```
+
+#### 5. 備份目錄權限問題
+```bash
+# 如果無法創建備份目錄
+sudo mkdir -p /path/to/backup/directory
+sudo chown $USER:$USER /path/to/backup/directory
+```
+
+## 📋 備份恢復最佳實踐
+
+1. **定期備份**：建立自動化備份腳本，定期執行
+2. **備份驗證**：每次備份後驗證備份文件的完整性
+3. **多層備份**：保留多個時間點的備份，不要只保留最新的
+4. **恢復測試**：定期在測試環境中測試恢復流程
+5. **文檔記錄**：記錄每次備份和恢復的操作，包括時間和原因
+6. **權限管理**：使用Docker容器方法避免直接修改文件權限
+
+這套備份恢復流程已在實際環境中驗證有效，適用於Docker Compose管理的MySQL容器環境。
